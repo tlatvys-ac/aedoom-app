@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AEDoom — DOOM, running inside an After Effects panel</title>
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<meta name="description" content="AEDoom is id Software's DOOM running as a CEP panel inside Adobe After Effects. Free extension: play, save, and hear the music without leaving your comp.">
+<style>
+    :root {
+        --bg: #1E2024;
+        --surface: #2A2D33;
+        --border: #4A4D54;
+        --text: #DDD;
+        --text-strong: #FFF;
+        --muted: #8A8F98;
+        --accent: #9999FF;
+        --navy: #00005B;
+        --gold: #FFC53D;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+    }
+    .wrap {
+        max-width: 660px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+    }
+    .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+        margin-bottom: 44px;
+    }
+    .logo { margin: 0; line-height: 0; }
+    .logo img { display: block; width: min(420px, 92vw); height: auto; }
+    .tagline { margin: 0; color: var(--muted); font-size: 15px; max-width: 460px; }
+
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 6px;
+    }
+    .btn {
+        display: inline-block;
+        background: var(--surface);
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        color: var(--text-strong);
+        font-size: 14px;
+        font-weight: 700;
+        padding: 10px 22px;
+        text-decoration: none;
+        transition: border-color 120ms, color 120ms, background-color 120ms;
+        white-space: nowrap;
+    }
+    .btn:hover { border-color: #FFF; }
+    .btn:active { background: rgba(153, 153, 255, 0.15); }
+    .btn small { display: block; font-weight: 500; font-size: 11px; color: var(--muted); }
+
+    section { margin-top: 40px; }
+    .divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .divider::before, .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+    }
+    .divider span {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+    }
+    ol { margin: 0; padding-left: 22px; }
+    li { margin-bottom: 10px; }
+    li::marker { color: var(--accent); font-weight: 700; }
+    a { color: var(--accent); }
+    .note {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--gold);
+        border-radius: 6px;
+        padding: 12px 14px;
+        font-size: 13px;
+        color: var(--text);
+        margin-top: 14px;
+    }
+    .note strong { color: var(--gold); }
+    .fine { color: var(--muted); font-size: 12px; }
+    code {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-size: 12px;
+    }
+    kbd {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 0 6px;
+        font: inherit;
+        font-size: 12px;
+        color: var(--text-strong);
+    }
+    .controls {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 4px 18px;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+    .controls div:nth-child(odd) { white-space: nowrap; }
+
+    /* Screenshots break out of the text column, like the other pages. */
+    .shots {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        width: min(1080px, calc(100vw - 48px));
+        margin-left: 50%;
+        transform: translateX(-50%);
+    }
+    .shots figure { margin: 0; flex: 1 1 320px; min-width: 260px; }
+    .shots img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        cursor: zoom-in;
+        transition: border-color 120ms;
+    }
+    .shots img:hover { border-color: var(--accent); }
+    .shots figcaption {
+        margin-top: 6px;
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+    }
+    .lightbox {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(10, 11, 13, 0.9);
+        z-index: 100;
+        cursor: zoom-out;
+        padding: 24px;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox img {
+        max-width: 96vw;
+        max-height: 92vh;
+        width: auto;
+        height: auto;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+    }
+    footer {
+        margin-top: 56px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+    }
+</style>
+</head>
+<body>
+<div class="wrap">
+    <div class="hero">
+        <h1 class="logo"><img src="images/doomae-logo.png" alt="DOOM AE" width="1120" height="720"></h1>
+        <p class="tagline">id Software's DOOM, running as a panel inside
+        After Effects. It has been ported to everything else, so.</p>
+        <div class="buttons">
+            <a class="btn" id="dl-zxp" href="https://github.com/tlatvys-ac/aedoom-app/releases/latest/download/AEDoom_v1.0.0.zxp">
+                Download AEDoom (.zxp)
+                <small>After Effects extension · free · shareware episode included</small>
+            </a>
+        </div>
+    </div>
+
+    <section>
+        <div class="divider"><span>About</span></div>
+        <p>AEDoom is the real Doom engine compiled to WebAssembly and docked
+        in After Effects as an extension panel. Knee-Deep in the Dead ships
+        with it. Sound effects and music play, saves survive closing the
+        panel or quitting AE, and the comp keeps rendering behind it.</p>
+    </section>
+
+    <section>
+        <div class="divider"><span>What it looks like</span></div>
+        <div class="shots">
+            <figure>
+                <img src="images/gameplay.png" alt="Doom's first level rendered inside the AEDoom panel" loading="lazy">
+                <figcaption>E1M1: Hangar, in a panel</figcaption>
+            </figure>
+            <figure>
+                <img src="images/start-screen.png" alt="The AEDoom start screen with the Play button" loading="lazy">
+                <figcaption>The start screen</figcaption>
+            </figure>
+            <figure>
+                <img src="images/quit.png" alt="Doom's quit prompt inside the panel: press Y to quit to DOS" loading="lazy">
+                <figcaption>Quitting returns you to the start screen, not to DOS</figcaption>
+            </figure>
+        </div>
+    </section>
+
+    <section>
+        <div class="divider"><span>Setup</span></div>
+        <ol>
+            <li><strong>Install the extension</strong> — open the
+                <code>.zxp</code> with a ZXP installer
+                (<a href="https://aescripts.com/learn/zxp-installer/">aescripts
+                ZXP Installer</a> is free).</li>
+            <li>Restart After Effects and open
+                <em>Window&nbsp;→&nbsp;Extensions&nbsp;→&nbsp;AEDoom</em>.</li>
+            <li>Click <strong>Play</strong>, then click the game once so the
+                panel has keyboard focus. Press <kbd>Esc</kbd> for the menu.</li>
+        </ol>
+        <div class="controls">
+            <div><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></div><div>move and turn</div>
+            <div><kbd>Ctrl</kbd> or <kbd>X</kbd></div><div>fire (X exists because Ctrl+arrows are macOS Mission Control shortcuts)</div>
+            <div><kbd>Space</kbd></div><div>use, open doors</div>
+            <div><kbd>Shift</kbd></div><div>run</div>
+            <div><kbd>Alt</kbd> · <kbd>,</kbd> <kbd>.</kbd></div><div>strafe</div>
+            <div><kbd>1</kbd> – <kbd>7</kbd></div><div>weapons</div>
+            <div><kbd>Tab</kbd></div><div>automap</div>
+        </div>
+        <p class="fine">Cheats work. While the game has focus the panel keeps
+        Doom's keys for itself, so AE's shortcuts pause until you click
+        elsewhere; Cmd shortcuts still reach AE.</p>
+        <p class="fine">The extension is signed with a self-signed
+        certificate — your ZXP installer may show an "unverified publisher"
+        notice. That's expected.</p>
+    </section>
+
+    <section>
+        <div class="divider"><span>Music</span></div>
+        <p>The engine plays Doom's soundtrack through a General MIDI
+        synthesizer that needs an instrument set, and the one Doom was
+        written for belongs to Gravis, so it isn't bundled. Adding it takes a
+        minute:</p>
+        <ol>
+            <li>Download <a href="https://www.doomworld.com/idgames/music/dgguspat">dgguspat.zip</a>
+                from the idgames archive (the Gravis Ultrasound patches, 5&nbsp;MB)
+                and unzip it.</li>
+            <li>On the AEDoom start screen click <strong>Add music…</strong>
+                and choose the unzipped folder.</li>
+        </ol>
+        <p class="fine">The patches are copied into your user library and
+        picked up on the next Play, and they survive updates to the extension.
+        Without them the game runs with sound effects only.</p>
+    </section>
+
+    <section>
+        <div class="divider"><span>Saves and other WADs</span></div>
+        <p class="fine">Save slots and settings are written to
+        <code>~/Library/Application Support/AEDoom/saves/</code>, per WAD, so
+        they outlive the panel, AE, and reinstalls. Own the full game? Drop
+        <code>doom.wad</code> or <code>doom2.wad</code> anywhere and use
+        <strong>Choose WAD…</strong> on the start screen. Freedoom works too.</p>
+    </section>
+
+    <section>
+        <div class="divider"><span>Requirements</span></div>
+        <p class="fine">After Effects 2024 or later (developed and tested on
+        AE 2026, macOS; Windows untested). Everything runs locally in the
+        panel — no accounts, no network calls. Doom engine © id Software,
+        GPL-2.0, via <a href="https://github.com/ozkl/doomgeneric">doomgeneric</a>
+        and Emscripten.</p>
+    </section>
+
+    <footer>
+        AEDoom <span id="version">v1.0.0</span> ·
+        <a href="https://github.com/tlatvys-ac/aedoom-app/releases">release notes</a> ·
+        made by Thomas Latvys ·
+        see also <a href="https://tlatvys-ac.github.io/anchor-buddy-app/">Anchor Buddy</a>
+        and <a href="https://tlatvys-ac.github.io/transporter-app/">Transporter</a>
+    </footer>
+
+    <div class="lightbox" id="lightbox" role="dialog" aria-label="Screenshot preview" aria-hidden="true">
+        <img id="lightbox-img" src="" alt="">
+    </div>
+
+    <script>
+    // Click a screenshot to preview it at full size; click anywhere
+    // (or press Escape) to close.
+    (() => {
+        const box = document.getElementById("lightbox");
+        const big = document.getElementById("lightbox-img");
+        document.querySelectorAll(".shots img").forEach((img) => {
+            img.addEventListener("click", () => {
+                big.src = img.src;
+                big.alt = img.alt;
+                box.classList.add("open");
+                box.setAttribute("aria-hidden", "false");
+            });
+        });
+        const close = () => {
+            box.classList.remove("open");
+            box.setAttribute("aria-hidden", "true");
+        };
+        box.addEventListener("click", close);
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") close();
+        });
+    })();
+    </script>
+
+    <script>
+    // Keep the version and download link pointing at the latest release
+    // automatically; the hardcoded values above are the fallback.
+    fetch("https://api.github.com/repos/tlatvys-ac/aedoom-app/releases/latest")
+        .then((r) => r.json())
+        .then((rel) => {
+            const v = (rel.tag_name || "").replace(/^v/, "");
+            if (v) document.getElementById("version").textContent = "v" + v;
+            const asset = (rel.assets || []).find((a) => /\.zxp$/.test(a.name));
+            const el = document.getElementById("dl-zxp");
+            if (asset && el) el.href = asset.browser_download_url;
+        })
+        .catch(() => {});
+    </script>
+</div>
+</body>
+</html>
