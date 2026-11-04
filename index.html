@@ -8,344 +8,611 @@
 <link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">
 <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
 <meta name="description" content="AEDoom is id Software's DOOM running as a CEP panel inside Adobe After Effects. Free extension: play, save, and hear the music without leaving your comp.">
+<meta name="theme-color" content="#1E2024">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tlatvys-ac.github.io/aedoom-app/">
+<meta property="og:title" content="AEDoom — DOOM, running inside an After Effects panel">
+<meta property="og:description" content="id Software's DOOM running as a panel inside After Effects. Free extension: play, save, and hear the music without leaving your comp.">
+<meta property="og:image" content="https://tlatvys-ac.github.io/aedoom-app/images/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Doom's first level, E1M1: Hangar, with the pistol raised and the status bar showing 50 ammo and 100% health">
+<meta name="twitter:card" content="summary_large_image">
 <style>
     :root {
         --bg: #1E2024;
         --surface: #2A2D33;
-        --border: #4A4D54;
+        --border: #3E424A;
         --text: #DDD;
         --text-strong: #FFF;
-        --muted: #8A8F98;
+        --muted: #9BA1AA;
         --accent: #9999FF;
+        --accent-hover: #B3B3FF;
+        --on-accent: #00005B;
+        /* the logo's colors */
         --navy: #00005B;
-        --gold: #FFC53D;
+        --lavender: #9999FF;
+        --white: #FFF;
     }
     * { box-sizing: border-box; }
+    html { overflow-x: clip; }
     body {
         margin: 0;
         background: var(--bg);
         color: var(--text);
         font-family: -apple-system, "SF Pro Text", "Helvetica Neue", "Segoe UI", sans-serif;
+        font-size: 16px;
         line-height: 1.6;
         -webkit-font-smoothing: antialiased;
     }
     .wrap {
         max-width: 660px;
         margin: 0 auto;
-        padding: 40px 24px 80px;
+        padding: 64px 24px 48px;
     }
+    a { color: var(--accent); text-underline-offset: 2px; }
+    a:hover { color: var(--accent-hover); }
+    :focus-visible {
+        outline: 2px solid var(--text-strong);
+        outline-offset: 3px;
+        border-radius: 4px;
+    }
+    h1, h2, h3, .tagline, figcaption { text-wrap: balance; }
+    /* Doom frames are 320×200 scaled up by whole pixels: keep them blocky. */
+    img.pixel { image-rendering: pixelated; }
+
+    /* ---------------------------------------------------------- hero */
     .hero {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        gap: 12px;
-        margin-bottom: 44px;
     }
-    .logo { margin: 0; line-height: 0; }
-    .logo img { display: block; width: min(420px, 92vw); height: auto; }
-    .tagline { margin: 0; color: var(--muted); font-size: 15px; max-width: 460px; }
-
+    /* The logo is the wordmark. Its PNG has ~7% transparent padding top
+       and bottom; pull that in so the spacing matches the other pages. */
+    .logo { --w: min(380px, 84vw); margin: calc(var(--w) * -0.073) 0; line-height: 0; }
+    .logo img { display: block; width: var(--w); height: auto; }
+    .tagline {
+        margin: 18px 0 0;
+        color: #B4B9C1;
+        font-size: 18px;
+        max-width: 460px;
+    }
     .buttons {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
         justify-content: center;
-        margin-top: 6px;
+        gap: 12px;
+        margin-top: 28px;
     }
     .btn {
         display: inline-block;
-        background: var(--surface);
-        border: 1px solid var(--accent);
-        border-radius: 6px;
-        color: var(--text-strong);
-        font-size: 14px;
+        min-width: 296px;
+        text-align: center;
+        background: var(--accent);
+        border-radius: 8px;
+        color: var(--on-accent);
+        font-size: 16px;
         font-weight: 700;
-        padding: 10px 22px;
+        line-height: 1.4;
+        padding: 12px 32px;
         text-decoration: none;
-        transition: border-color 120ms, color 120ms, background-color 120ms;
+        box-shadow: 0 6px 24px rgba(153, 153, 255, 0.25);
+        transition: background-color 120ms, box-shadow 120ms, transform 120ms;
         white-space: nowrap;
     }
-    .btn:hover { border-color: #FFF; }
-    .btn:active { background: rgba(153, 153, 255, 0.15); }
-    .btn small { display: block; font-weight: 500; font-size: 11px; color: var(--muted); }
+    .btn:hover {
+        background: var(--accent-hover);
+        color: var(--on-accent);
+        box-shadow: 0 8px 32px rgba(153, 153, 255, 0.4);
+        transform: translateY(-1px);
+    }
+    .btn:active { transform: none; box-shadow: 0 4px 16px rgba(153, 153, 255, 0.25); }
+    .btn small {
+        display: block;
+        font-weight: 500;
+        font-size: 12px;
+        color: rgba(0, 0, 91, 0.78);
+    }
+    .hero-notes {
+        margin: 16px 0 0;
+        color: var(--muted);
+        max-width: 480px;
+        font-size: 13px;
+        line-height: 1.7;
+        text-wrap: balance;
+    }
 
-    section { margin-top: 40px; }
-    .divider {
+    /* ---------------------------------------------------- hero image */
+    /* Breaks out of the text column, like the gallery. */
+    .hero-media {
+        flex: none;
+        width: min(756px, calc(100vw - 48px));
+        margin: 44px 0 0;
+    }
+    .hero-media .shot {
+        border-radius: 12px;
+        background: #0E0F12;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+    }
+    .hero-media .shot:focus-visible { border-radius: 12px; }
+    .hero-media figcaption {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--muted);
+    }
+
+    /* ------------------------------------------------------ sections */
+    section { margin-top: 72px; }
+    h2.divider {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 14px;
+        gap: 12px;
+        margin: 0 0 24px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
     }
-    .divider::before, .divider::after {
+    h2.divider::before, h2.divider::after {
         content: "";
         flex: 1;
         height: 1px;
         background: var(--border);
     }
-    .divider span {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--muted);
+    h3 {
+        margin: 32px 0 8px;
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.4;
+        color: var(--text-strong);
     }
-    ol { margin: 0; padding-left: 22px; }
-    li { margin-bottom: 10px; }
-    li::marker { color: var(--accent); font-weight: 700; }
-    a { color: var(--accent); }
-    .note {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-left: 3px solid var(--gold);
-        border-radius: 6px;
-        padding: 12px 14px;
-        font-size: 13px;
-        color: var(--text);
-        margin-top: 14px;
-    }
-    .note strong { color: var(--gold); }
-    .fine { color: var(--muted); font-size: 12px; }
+    h3:first-of-type { margin-top: 0; }
+    p { margin: 0 0 12px; }
+    .lead { font-size: 17px; }
+    .fine { color: var(--muted); font-size: 14px; }
+    strong { color: var(--text-strong); }
     code {
+        padding: 1px 6px;
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 4px;
-        padding: 1px 6px;
-        font-size: 12px;
+        font: 0.875em/1.5 ui-monospace, "SF Mono", Menlo, monospace;
     }
     kbd {
+        display: inline-block;
+        min-width: 1.9em;
+        padding: 0 6px;
         background: var(--surface);
         border: 1px solid var(--border);
         border-bottom-width: 2px;
         border-radius: 4px;
-        padding: 0 6px;
         font: inherit;
-        font-size: 12px;
+        font-size: 13px;
+        line-height: 1.6;
+        text-align: center;
         color: var(--text-strong);
     }
-    .controls {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 4px 18px;
-        font-size: 13px;
-        margin-top: 6px;
-    }
-    .controls div:nth-child(odd) { white-space: nowrap; }
 
-    /* Screenshots break out of the text column, like the other pages. */
-    .shots {
-        display: flex;
-        gap: 16px;
-        align-items: flex-start;
-        flex-wrap: wrap;
+    /* ------------------------------------------------------- gallery */
+    /* Screenshots break out of the text column. */
+    .gallery {
         width: min(1080px, calc(100vw - 48px));
         margin-left: 50%;
         transform: translateX(-50%);
     }
-    .shots figure { margin: 0; flex: 1 1 320px; min-width: 260px; }
-    .shots img {
+    .shots {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .shots figure { margin: 0; }
+    .shot {
         display: block;
         width: 100%;
-        height: auto;
-        border-radius: 8px;
+        padding: 0;
         border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+        overflow: hidden;
         cursor: zoom-in;
         transition: border-color 120ms;
     }
-    .shots img:hover { border-color: var(--accent); }
+    .shot:hover { border-color: var(--accent); }
+    .shot:focus-visible { border-radius: 10px; }
+    .shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
     .shots figcaption {
-        margin-top: 6px;
-        font-size: 11px;
+        margin-top: 8px;
+        font-size: 13px;
         color: var(--muted);
         text-align: center;
     }
+    figcaption strong { font-weight: 600; }
+
+    /* --------------------------------------------------------- setup */
+    .steps {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: step;
+    }
+    .steps li {
+        position: relative;
+        margin-bottom: 16px;
+        padding-left: 44px;
+        counter-increment: step;
+    }
+    .steps li::before {
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--c);
+        box-shadow: var(--ring, none);
+        color: var(--n, var(--navy));
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 28px;
+        text-align: center;
+    }
+    .steps li:nth-child(3n+1) { --c: var(--lavender); }
+    .steps li:nth-child(3n+2) { --c: var(--white); }
+    .steps li:nth-child(3n+3) { --c: var(--navy); --n: var(--white); --ring: inset 0 0 0 2px var(--lavender); }
+
+    .controls {
+        margin: 28px 0 0;
+        padding: 16px 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+    }
+    .controls h3 { margin: 0 0 10px; font-size: 16px; }
+    .controls dl {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 8px 20px;
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.5;
+    }
+    .controls dt { white-space: nowrap; }
+    .controls kbd { background: #383C44; border-color: #50545C; }
+    .controls dd { margin: 0; }
+    .controls p { margin: 12px 0 0; font-size: 15px; }
+
+    .callout {
+        margin: 28px 0 0;
+        padding: 16px 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--lavender);
+        border-radius: 8px;
+        scroll-margin-top: 24px;
+    }
+    .callout h3 { margin: 0 0 6px; font-size: 16px; }
+    .callout p { margin: 0 0 8px; font-size: 15px; }
+    .callout p:last-child { margin-bottom: 0; }
+
+    .path {
+        display: flex;
+        align-items: stretch;
+        margin: 8px 0 12px;
+        background: #17191C;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+    }
+    .path code {
+        flex: 1;
+        min-width: 0;
+        padding: 9px 12px;
+        overflow-x: auto;
+        white-space: nowrap;
+        background: none;
+        border: 0;
+        border-radius: 0;
+        font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
+        color: var(--text);
+    }
+    .copy {
+        flex: none;
+        padding: 0 14px;
+        border: 0;
+        border-left: 1px solid var(--border);
+        border-radius: 0 6px 6px 0;
+        background: transparent;
+        color: var(--accent);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .copy:hover { background: var(--surface); }
+
+    /* ------------------------------------------------------ lightbox */
     .lightbox {
         position: fixed;
         inset: 0;
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(10, 11, 13, 0.9);
+        background: rgba(10, 11, 13, 0.92);
         z-index: 100;
         cursor: zoom-out;
         padding: 24px;
     }
-    .lightbox.open { display: flex; }
+    .lightbox[hidden] { display: none; }
     .lightbox img {
         max-width: 96vw;
         max-height: 92vh;
         width: auto;
         height: auto;
-        border-radius: 8px;
+        border-radius: 10px;
         border: 1px solid var(--border);
         box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
     }
+    .lightbox-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        background: var(--surface);
+        color: var(--text-strong);
+        font-size: 22px;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    /* -------------------------------------------------------- footer */
     footer {
-        margin-top: 56px;
+        margin-top: 88px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
         text-align: center;
         color: var(--muted);
-        font-size: 12px;
+        font-size: 13px;
+    }
+    footer p { margin: 0 0 6px; }
+    footer a, .nowrap { white-space: nowrap; }
+    footer a { text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .sep { margin: 0 2px 0 6px; opacity: 0.5; }
+
+    @media (max-width: 620px) {
+        .wrap { padding-top: 48px; }
+        .shots { grid-template-columns: 1fr; }
+        section { margin-top: 56px; }
+        .controls dl { gap: 8px 14px; }
+        .btn { min-width: 0; width: 100%; padding: 12px 16px; white-space: normal; }
+        .btn small { text-wrap: balance; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; }
     }
 </style>
 </head>
 <body>
 <div class="wrap">
-    <div class="hero">
+    <header class="hero">
         <h1 class="logo"><img src="images/doomae-logo.png" alt="DOOM AE" width="1120" height="720"></h1>
         <p class="tagline">id Software's DOOM, running as a panel inside
         After Effects. It has been ported to everything else, so.</p>
         <div class="buttons">
             <a class="btn" id="dl-zxp" href="https://github.com/tlatvys-ac/aedoom-app/releases/latest/download/AEDoom_v1.0.1.zxp">
                 Download AEDoom (.zxp)
-                <small>After Effects extension · free · shareware episode included</small>
+                <small><span class="nowrap">After Effects extension · free ·</span> <span class="nowrap">shareware episode included</span></small>
             </a>
         </div>
-    </div>
+        <p class="hero-notes">
+            Install it with a free ZXP installer. It's self-signed, so the
+            installer may show an “unverified publisher” notice.
+            <a href="#unsigned">Details</a>
+        </p>
+        <figure class="hero-media">
+            <button class="shot" type="button" aria-haspopup="dialog">
+                <img class="pixel" src="images/gameplay.png" width="1280" height="800" decoding="async" alt="Doom's first level rendered inside the AEDoom panel: the pistol raised over a blue toxic pool, with the status bar showing 50 ammo and 100% health">
+            </button>
+            <figcaption><strong>E1M1: Hangar</strong> — in a panel</figcaption>
+        </figure>
+    </header>
 
+    <main>
     <section>
-        <div class="divider"><span>About</span></div>
-        <p>AEDoom is the real Doom engine compiled to WebAssembly and docked
+        <h2 class="divider">About</h2>
+        <p class="lead">AEDoom is the real Doom engine compiled to WebAssembly and docked
         in After Effects as an extension panel. Knee-Deep in the Dead ships
         with it. Sound effects and music play, saves survive closing the
         panel or quitting AE, and the comp keeps rendering behind it.</p>
     </section>
 
     <section>
-        <div class="divider"><span>What it looks like</span></div>
-        <div class="shots">
-            <figure>
-                <img src="images/gameplay.png" alt="Doom's first level rendered inside the AEDoom panel" loading="lazy">
-                <figcaption>E1M1: Hangar, in a panel</figcaption>
-            </figure>
-            <figure>
-                <img src="images/start-screen.png" alt="The AEDoom start screen with the Play button" loading="lazy">
-                <figcaption>The start screen</figcaption>
-            </figure>
-            <figure>
-                <img src="images/quit.png" alt="Doom's quit prompt inside the panel: press Y to quit to DOS" loading="lazy">
-                <figcaption>Quitting returns you to the start screen, not to DOS</figcaption>
-            </figure>
+        <h2 class="divider">What it looks like</h2>
+        <div class="gallery">
+            <div class="shots">
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog">
+                        <picture>
+                            <source type="image/avif" srcset="images/start-screen.avif">
+                            <img src="images/start-screen.png" width="1386" height="866" loading="lazy" decoding="async" alt="The AEDoom start screen with the Play button">
+                        </picture>
+                    </button>
+                    <figcaption><strong>The start screen</strong> — the loaded WAD, the music, and Play</figcaption>
+                </figure>
+                <figure>
+                    <button class="shot" type="button" aria-haspopup="dialog">
+                        <img class="pixel" src="images/quit.png" width="1280" height="800" loading="lazy" decoding="async" alt="Doom's quit prompt inside the panel: press Y to quit to DOS">
+                    </button>
+                    <figcaption><strong>Quitting</strong> — returns you to the start screen, not to DOS</figcaption>
+                </figure>
+            </div>
         </div>
     </section>
 
     <section>
-        <div class="divider"><span>Setup</span></div>
-        <ol>
-            <li><strong>Install the extension</strong> — open the
+        <h2 class="divider">Setup</h2>
+        <ol class="steps">
+            <li><strong>Install the extension.</strong> Open the
                 <code>.zxp</code> with a ZXP installer
                 (<a href="https://aescripts.com/learn/zxp-installer/">aescripts
                 ZXP Installer</a> is free).</li>
-            <li>Restart After Effects and open
+            <li><strong>Open the panel.</strong> Restart After Effects and open
                 <em>Window&nbsp;→&nbsp;Extensions&nbsp;→&nbsp;AEDoom</em>.</li>
-            <li>Click <strong>Play</strong>, then click the game once so the
-                panel has keyboard focus. Press <kbd>Esc</kbd> for the menu.</li>
+            <li><strong>Play.</strong> Click <strong>Play</strong>, then click
+                the game once so the panel has keyboard focus. Press
+                <kbd>Esc</kbd> for the menu.</li>
         </ol>
+
         <div class="controls">
-            <div><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></div><div>move and turn</div>
-            <div><kbd>Ctrl</kbd> or <kbd>X</kbd></div><div>fire (X exists because Ctrl+arrows are macOS Mission Control shortcuts)</div>
-            <div><kbd>Space</kbd></div><div>use, open doors</div>
-            <div><kbd>Shift</kbd></div><div>run</div>
-            <div><kbd>Alt</kbd> · <kbd>,</kbd> <kbd>.</kbd></div><div>strafe</div>
-            <div><kbd>1</kbd> – <kbd>7</kbd></div><div>weapons</div>
-            <div><kbd>Tab</kbd></div><div>automap</div>
+            <h3>Controls</h3>
+            <dl>
+                <dt><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></dt><dd>move and turn</dd>
+                <dt><kbd>Ctrl</kbd> or <kbd>X</kbd></dt><dd>fire (X exists because Ctrl+arrows are macOS Mission Control shortcuts)</dd>
+                <dt><kbd>Space</kbd></dt><dd>use, open doors</dd>
+                <dt><kbd>Shift</kbd></dt><dd>run</dd>
+                <dt><kbd>Alt</kbd> · <kbd>,</kbd> <kbd>.</kbd></dt><dd>strafe</dd>
+                <dt><kbd>1</kbd> – <kbd>7</kbd></dt><dd>weapons</dd>
+                <dt><kbd>Tab</kbd></dt><dd>automap</dd>
+            </dl>
+            <p>Cheats work.</p>
         </div>
-        <p class="fine">Cheats work. While the game has focus the panel keeps
-        Doom's keys for itself, so AE's shortcuts pause until you click
-        elsewhere; Cmd shortcuts still reach AE.</p>
-        <p class="fine">The extension is signed with a self-signed
-        certificate — your ZXP installer may show an "unverified publisher"
-        notice. That's expected.</p>
+
+        <div class="callout" id="unsigned">
+            <h3>Good to know</h3>
+            <p><strong>“Unverified publisher”:</strong> the extension is signed
+            with a self-signed certificate, so your ZXP installer may show an
+            “unverified publisher” notice. That's expected.</p>
+            <p><strong>AE shortcuts while you play:</strong> while the game has
+            focus the panel keeps Doom's keys for itself, so AE's shortcuts
+            pause until you click elsewhere; Cmd shortcuts still reach AE.</p>
+        </div>
     </section>
 
     <section>
-        <div class="divider"><span>Music</span></div>
+        <h2 class="divider">Music</h2>
         <p>The engine plays Doom's soundtrack through a General MIDI
         synthesizer that needs an instrument set, and the one Doom was
         written for belongs to Gravis, so it isn't bundled. Adding it takes a
         minute:</p>
-        <ol>
-            <li>Download <a href="https://www.doomworld.com/idgames/music/dgguspat">dgguspat.zip</a>
+        <ol class="steps">
+            <li><strong>Get the patches.</strong> Download
+                <a href="https://www.doomworld.com/idgames/music/dgguspat">dgguspat.zip</a>
                 from the idgames archive (the Gravis Ultrasound patches, 5&nbsp;MB)
                 and unzip it.</li>
-            <li>On the AEDoom start screen click <strong>Add music…</strong>
-                and choose the unzipped folder.</li>
+            <li><strong>Add them.</strong> On the AEDoom start screen click
+                <strong>Add music…</strong> and choose the unzipped folder.</li>
         </ol>
-        <p class="fine">The patches are copied into your user library and
-        picked up on the next Play, and they survive updates to the extension.
-        Without them the game runs with sound effects only.</p>
+        <p>The patches are copied into your user library and picked up on
+        the next Play, and they survive updates to the extension. Without
+        them the game runs with sound effects only.</p>
     </section>
 
     <section>
-        <div class="divider"><span>Saves and other WADs</span></div>
-        <p class="fine">Save slots and settings are written to
-        <code>~/Library/Application Support/AEDoom/saves/</code>, per WAD, so
-        they outlive the panel, AE, and reinstalls. Own the full game? Drop
-        <code>doom.wad</code> or <code>doom2.wad</code> anywhere and use
-        <strong>Choose WAD…</strong> on the start screen. Freedoom works too.</p>
+        <h2 class="divider">Saves and other WADs</h2>
+        <h3>Saves</h3>
+        <p>Save slots and settings are written here, per WAD, so they
+        outlive the panel, AE, and reinstalls:</p>
+        <div class="path">
+            <code id="saves-path">~/Library/Application Support/AEDoom/saves/</code>
+            <button class="copy" type="button" data-copy="saves-path">Copy</button>
+        </div>
+        <h3>Other WADs</h3>
+        <p>Own the full game? Drop <code>doom.wad</code> or
+        <code>doom2.wad</code> anywhere and use <strong>Choose WAD…</strong>
+        on the start screen. Freedoom works too.</p>
     </section>
 
     <section>
-        <div class="divider"><span>Requirements</span></div>
+        <h2 class="divider">Requirements</h2>
         <p class="fine">After Effects 2024 or later (developed and tested on
         AE 2026, macOS; Windows untested). Everything runs locally in the
         panel — no accounts, no network calls. Doom engine © id Software,
         GPL-2.0, via <a href="https://github.com/ozkl/doomgeneric">doomgeneric</a>
         and Emscripten.</p>
     </section>
+    </main>
 
     <footer>
-        AEDoom <span id="version">v1.0.1</span> ·
-        <a href="https://github.com/tlatvys-ac/aedoom-app/releases">release notes</a> ·
-        made by Thomas Latvys ·
-        see also <a href="https://tlatvys-ac.github.io/anchor-buddy-app/">Anchor Buddy</a>,
-        <a href="https://tlatvys-ac.github.io/transporter-app/">Transporter</a>,
-        <a href="https://tlatvys-ac.github.io/motionref-app/">MotionRef</a>,
-        and <a href="https://tlatvys-ac.github.io/fluidlab-app/">FluidLab</a>
+        <p><span class="nowrap">AEDoom <span id="version">v1.0.1</span></span><span class="sep">·</span> <a href="https://github.com/tlatvys-ac/aedoom-app/releases">Release notes</a><span class="sep">·</span> <span class="nowrap">Made by Thomas Latvys</span></p>
+        <p>More tools:
+            <a href="https://tlatvys-ac.github.io/fluidlab-app/">FluidLab</a><span class="sep">·</span> <a href="https://tlatvys-ac.github.io/refractlab-app/">RefractLab</a><span class="sep">·</span> <a href="https://tlatvys-ac.github.io/anchor-buddy-app/">Anchor Buddy</a><span class="sep">·</span> <a href="https://tlatvys-ac.github.io/transporter-app/">Transporter</a><span class="sep">·</span> <a href="https://tlatvys-ac.github.io/motionref-app/">MotionRef</a>
+        </p>
     </footer>
-
-    <div class="lightbox" id="lightbox" role="dialog" aria-label="Screenshot preview" aria-hidden="true">
-        <img id="lightbox-img" src="" alt="">
-    </div>
-
-    <script>
-    // Click a screenshot to preview it at full size; click anywhere
-    // (or press Escape) to close.
-    (() => {
-        const box = document.getElementById("lightbox");
-        const big = document.getElementById("lightbox-img");
-        document.querySelectorAll(".shots img").forEach((img) => {
-            img.addEventListener("click", () => {
-                big.src = img.src;
-                big.alt = img.alt;
-                box.classList.add("open");
-                box.setAttribute("aria-hidden", "false");
-            });
-        });
-        const close = () => {
-            box.classList.remove("open");
-            box.setAttribute("aria-hidden", "true");
-        };
-        box.addEventListener("click", close);
-        document.addEventListener("keydown", (e) => {
-            if (e.key === "Escape") close();
-        });
-    })();
-    </script>
-
-    <script>
-    // Keep the version and download link pointing at the latest release
-    // automatically; the hardcoded values above are the fallback.
-    fetch("https://api.github.com/repos/tlatvys-ac/aedoom-app/releases/latest")
-        .then((r) => r.json())
-        .then((rel) => {
-            const v = (rel.tag_name || "").replace(/^v/, "");
-            if (v) document.getElementById("version").textContent = "v" + v;
-            const asset = (rel.assets || []).find((a) => /\.zxp$/.test(a.name));
-            const el = document.getElementById("dl-zxp");
-            if (asset && el) el.href = asset.browser_download_url;
-        })
-        .catch(() => {});
-    </script>
 </div>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot preview" hidden>
+    <img id="lightbox-img" src="" alt="">
+    <button class="lightbox-close" id="lightbox-close" type="button" aria-label="Close preview">×</button>
+</div>
+
+<script>
+// Click (or Enter/Space on) a screenshot to preview it at full size; click
+// anywhere, press Escape, or use the close button to close. Focus moves
+// into the preview and back to the screenshot that opened it.
+(() => {
+    const box = document.getElementById("lightbox");
+    const big = document.getElementById("lightbox-img");
+    const closeBtn = document.getElementById("lightbox-close");
+    let opener = null;
+    const open = (btn) => {
+        const img = btn.querySelector("img");
+        big.src = img.currentSrc || img.src;
+        big.alt = img.alt;
+        big.classList.toggle("pixel", img.classList.contains("pixel"));
+        opener = btn;
+        box.hidden = false;
+        document.body.style.overflow = "hidden";
+        closeBtn.focus();
+    };
+    const close = () => {
+        if (box.hidden) return;
+        box.hidden = true;
+        document.body.style.overflow = "";
+        if (opener) opener.focus();
+    };
+    document.querySelectorAll(".shot").forEach((btn) => btn.addEventListener("click", () => open(btn)));
+    box.addEventListener("click", close);
+    document.addEventListener("keydown", (e) => {
+        if (box.hidden) return;
+        if (e.key === "Escape") close();
+        if (e.key === "Tab") { e.preventDefault(); closeBtn.focus(); }
+    });
+})();
+
+// Copy the saves path.
+document.querySelectorAll(".copy").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        const text = document.getElementById(btn.dataset.copy).textContent;
+        const done = () => {
+            btn.textContent = "Copied";
+            setTimeout(() => { btn.textContent = "Copy"; }, 1500);
+        };
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
+    });
+});
+
+// Keep the version and download link pointing at the latest release
+// automatically; the hardcoded values above are the fallback if this
+// fetch fails.
+fetch("https://api.github.com/repos/tlatvys-ac/aedoom-app/releases/latest")
+    .then((r) => r.json())
+    .then((rel) => {
+        const v = (rel.tag_name || "").replace(/^v/, "");
+        if (v) document.getElementById("version").textContent = "v" + v;
+        const asset = (rel.assets || []).find((a) => /\.zxp$/i.test(a.name));
+        const el = document.getElementById("dl-zxp");
+        if (asset && el) el.href = asset.browser_download_url;
+    })
+    .catch(() => {});
+</script>
 </body>
 </html>
